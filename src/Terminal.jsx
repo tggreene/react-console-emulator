@@ -160,10 +160,18 @@ export default class Terminal extends Component {
         const { exists, command } = commandExists(this.state.commands, rawCommand, this.props.ignoreCommandCase)
 
         if (!exists) {
-          this.pushToStdout(this.props.errorText
-            ? this.props.errorText.replace(/\[command\]/gi, command)
-            : `Command '${rawCommand}' not found!`
-          )
+          const cmd = this.state.commands['unknown'];
+          if (cmd && cmd.fn) {
+            const res = await cmd.fn(rawInput);
+
+            this.pushToStdout(res)
+            commandResult.result = res
+          } else {
+            this.pushToStdout(this.props.errorText
+              ? this.props.errorText.replace(/\[command\]/gi, command)
+              : `Command '${rawCommand}' not found!`
+            )
+          }
         } else {
           const cmd = this.state.commands[command]
           const res = await cmd.fn(...args)
